@@ -1,0 +1,11 @@
+user_group : "teachers"
+group_ssh_key_path: "{{ playbook_dir }}/{{ group_name }}"
+ssh_port: 
+  - "22001"
+  - "22005"
+ssh_ip: "84.237.52.100"
+
+users:
+  - name: "o.gurtueva" 
+  - name: "r.izhitskii"
+    email: "r.izhitskii@alumni.nsu.ru"

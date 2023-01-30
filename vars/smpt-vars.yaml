@@ -1,0 +1,4 @@
+smpt_server_port: 587
+smpt_server_host: smtp.gmail.com
+smpt_server_username: "username@domain.com"
+smpt_server_password: "password"

@@ -1,0 +1,56 @@
+---
+- hosts: all
+  become: yes
+
+  vars_files:
+    - "vars/{{ group_name }}-vars.yml"
+
+  tasks:
+    - name: Setup users and authorization keys
+      block:
+
+        - name: Create student's user group 
+          ansible.builtin.group:
+            name: "{{ user_group }}"
+            state: present
+
+        - name: Create users
+          ansible.builtin.user:
+            name: "{{ item.name }}"
+            group: "{{ user_group }}"
+            shell: /usr/bin/bash
+            state: present
+          with_items: "{{ users }}"
+
+        - name: Set authorized key taken from file for all users
+          ansible.posix.authorized_key:
+            user: "{{ item.name }}"
+            state: present
+            key: "{{ lookup('file', group_ssh_key_path + '/'+ item.name + '.pub') }}"
+          with_items: "{{ users }}"
+
+        - name: Setup disk quota for all users
+          ansible.builtin.command:
+            cmd: "setquota -u {{ item.name }} 1024M 1100M 0 0 /home"         
+          with_items: "{{ users }}"
+
+        - name: Check the quota configuration
+          ansible.builtin.command:
+            cmd: "sudo repquota -s /home"
+          register: check_quota_output
+
+        - debug: 
+            var: check_quota_output.stdout_lines  
+      rescue:
+        - name: Remove all created users
+          ansible.builtin.user:
+            name: "{{ item.name }}"
+            group: "{{ user_group }}"
+            state: absent
+            remove: yes
+          with_items: "{{ users }}"
+
+        - name: Remove student's user group 
+          ansible.builtin.group:
+            name: "{{ user_group }}"
+            state: absent

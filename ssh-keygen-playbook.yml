@@ -1,0 +1,60 @@
+---
+- hosts: localhost
+
+  vars_files:
+    - "vars/{{ group_name }}-vars.yml"
+    - "vars/smtp-vars.yml"
+
+  tasks:
+    - name: Create a directory if it does not exist
+      ansible.builtin.file:
+        path: "{{ group_ssh_key_path }}"
+        state: directory
+        mode: '0755'
+
+    - name: Generate an OpenSSH keypair
+      community.crypto.openssh_keypair:
+        type: ed25519
+        path: "{{ group_ssh_key_path }}/{{ item.name }}"
+      with_items: "{{ users }}"
+      
+    - name: Print email
+      ansible.builtin.debug:
+        msg: "{% if item.email is defined %}{{item.email}}{% else %}{{item.name}}@g.nsu.ru{% endif %}"
+      with_items: "{{ users }}"
+
+    - name: Print body
+      ansible.builtin.debug:
+        msg: "Привет! \n\n
+          Вот твои доступы к серверу группы \n 
+          ssh ip - {{ ssh_ip }} \n
+          ssh port - {{ ssh_port }} \n
+          username - {{item.name}} \n
+          identiry-key - прикрепил к письму (авторизация по ssh ключу)\n\n
+          У всех пользователей в группе student есть ограничения по размеру папки home, а именно 1gb\n\n
+    
+          Если тебе не хватает какого то ПО на серваке, пишите, поставим.\n\n
+          С уважением,\n"
+      with_items: "{{ users }}"
+
+    - name: Sending an e-mail using Gmail SMTP servers
+      community.general.mail:
+        host: {{ smpt_server_host }}
+        port: {{ smpt_server_port }}
+        username: {{ smpt_server_username }}
+        password: {{ smpt_server_password }}
+        to: "{% if item.email is defined %}{{item.email}}{% else %}{{item.name}}@g.nsu.ru{% endif %}"
+        subject: Доступы к серверу для тестов курсу Операционные Системы
+        body: "Привет! \n\n
+          Вот твои доступы к серверу группы \n 
+          ssh ip - {{ ssh_ip }} \n
+          ssh port - {{ ssh_port }} \n
+          username - {{item.name}} \n
+          identiry-key - прикрепил к письму (авторизация по ssh ключу)\n\n
+          У всех пользователей в группе student есть ограничения по размеру папки home, а именно 1gb\n\n
+    
+          Если тебе не хватает какого то ПО на серваке, пишите, поставим.\n\n
+          С уважением,\n"
+        attach: "{{ group_ssh_key_path }}/{{ item.name }}"
+      with_items: "{{ users }}"
+

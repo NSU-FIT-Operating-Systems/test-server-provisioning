@@ -1,0 +1,8 @@
+virtualmachines:
+  hosts:
+    fit-posix-20201:
+      ansible_host: fit-posix-20201
+      group_name: "20201"
+    fit-posix-20205:
+      ansible_host: fit-posix-20205
+      group_name: "20205"

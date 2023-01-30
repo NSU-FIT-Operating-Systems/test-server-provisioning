@@ -1,0 +1,16 @@
+user_group : "student"
+group_ssh_key_path: "{{ playbook_dir }}/{{ group_name }}"
+ssh_port: "22001"
+ssh_ip: "84.237.52.100"
+
+users:
+  - name: "s.gerya" 
+  - name: "a.ivanov15"
+  - name: "a.yanin"
+  - name: "k.romanov"
+  - name: "k.shadrin"
+  - name: "m.dyagilev"
+  - name: "m.kovalev1"
+  - name: "r.tolkacheva"
+  - name: "s.pchelintsev"
+  - name: "v.sadriev"

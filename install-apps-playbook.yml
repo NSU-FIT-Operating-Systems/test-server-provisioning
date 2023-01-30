@@ -1,0 +1,15 @@
+---
+- hosts: all
+  become: yes
+
+  vars_files:
+  - "vars/apt-packages-vars.yml"
+
+
+  tasks:
+    - name: Install packages
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        state: present
+      with_items: "{{ install_packages }}"
+
